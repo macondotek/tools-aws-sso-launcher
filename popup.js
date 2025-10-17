@@ -702,40 +702,54 @@ function stopPopupKeepAlive() {
 }
 
 // Initialize the popup
+// Check both sync and local storage, prioritize the most recent one
 chrome.storage.sync.get(["awsSsoLauncherConfig"], (syncRes) => {
-  let storedConfig = syncRes.awsSsoLauncherConfig;
-  
-  if (!storedConfig) {
-    // Try local storage if sync storage is empty - check for split storage
-    chrome.storage.local.get([
-      "awsSsoLauncherConfig", 
-      "awsSsoLauncherConfig_org", 
-      "awsSsoLauncherConfig_accounts"
-    ], (localRes) => {
-      if (localRes.awsSsoLauncherConfig_org || localRes.awsSsoLauncherConfig_accounts) {
-        // Split storage format - reconstruct the config
-        storedConfig = {
-          ...localRes.awsSsoLauncherConfig,
-          originalOrgConfigText: localRes.awsSsoLauncherConfig_org,
-          originalConfigText: localRes.awsSsoLauncherConfig_accounts,
-          orgConfigText: localRes.awsSsoLauncherConfig_org,
-          configText: localRes.awsSsoLauncherConfig_accounts
-        };
-        // console.log('Popup: Reconstructed from split storage:', {
-        //   hasMainConfig: !!localRes.awsSsoLauncherConfig,
-        //   hasOrgText: !!localRes.awsSsoLauncherConfig_org,
-        //   hasAccountsText: !!localRes.awsSsoLauncherConfig_accounts,
-        //   orgTextLength: localRes.awsSsoLauncherConfig_org?.length,
-        //   accountsTextLength: localRes.awsSsoLauncherConfig_accounts?.length
-        // });
-      } else {
+  chrome.storage.local.get([
+    "awsSsoLauncherConfig", 
+    "awsSsoLauncherConfig_org", 
+    "awsSsoLauncherConfig_accounts"
+  ], (localRes) => {
+    let storedConfig = null;
+    let configSource = "none";
+    
+    // Check if we have split storage in local (most recent format)
+    if (localRes.awsSsoLauncherConfig_org || localRes.awsSsoLauncherConfig_accounts) {
+      // Split storage format - reconstruct the config
+      storedConfig = {
+        ...localRes.awsSsoLauncherConfig,
+        originalOrgConfigText: localRes.awsSsoLauncherConfig_org,
+        originalConfigText: localRes.awsSsoLauncherConfig_accounts,
+        orgConfigText: localRes.awsSsoLauncherConfig_org,
+        configText: localRes.awsSsoLauncherConfig_accounts
+      };
+      configSource = "local-split";
+    } else if (localRes.awsSsoLauncherConfig) {
+      // Single local storage config
+      storedConfig = localRes.awsSsoLauncherConfig;
+      configSource = "local-single";
+    } else if (syncRes.awsSsoLauncherConfig) {
+      // Fallback to sync storage
+      storedConfig = syncRes.awsSsoLauncherConfig;
+      configSource = "sync";
+    }
+    
+    // If we have both sync and local, use the most recent one
+    if (syncRes.awsSsoLauncherConfig && localRes.awsSsoLauncherConfig) {
+      const syncTimestamp = syncRes.awsSsoLauncherConfig.lastUpdated || 0;
+      const localTimestamp = localRes.awsSsoLauncherConfig.lastUpdated || 0;
+      
+      if (localTimestamp > syncTimestamp) {
         storedConfig = localRes.awsSsoLauncherConfig;
+        configSource = "local-newer";
+      } else {
+        storedConfig = syncRes.awsSsoLauncherConfig;
+        configSource = "sync-newer";
       }
-      initializeWithConfig(storedConfig);
-    });
-  } else {
+    }
+    
+    // console.log('Popup: Using config from', configSource, 'storage');
     initializeWithConfig(storedConfig);
-  }
+  });
 });
 
 function initializeWithConfig(storedConfig) {

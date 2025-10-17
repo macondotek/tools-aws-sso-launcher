@@ -431,70 +431,7 @@ group = Group2`;
 
   // Generate legacy example configuration
   static generateExample() {
-    return `### Organizations
-[Corpay]
-organization = true
-region = us-east-1
-roleName = FC-Admin
-
-[AnotherOrg]
-organization = true
-region = us-west-2
-roleName = Admin
-
-### Defaults (can reference organizations)
-[CorpayDefaults]
-defaults = Corpay
-group = CorpayAccounts
-
-[AnotherOrgDefaults]
-defaults = AnotherOrg
-group = AnotherOrgAccounts
-
-### CorpayComplete Accounts
-[Accrulify]
-aws_account_id = 415867864530
-defaults = Corpay
-group = CorpayComplete
-
-[CorpayComplete Main]
-aws_account_id = 123456789012
-defaults = Corpay
-group = CorpayComplete
-
-### Fuels Accounts
-[Fuels Dev]
-aws_account_id = 924615357380
-defaults = Corpay
-group = Fuels
-
-[Fuels QA]
-aws_account_id = 812998806105
-defaults = Corpay
-group = Fuels
-
-[Fuels Prod]
-aws_account_id = 987654321098
-defaults = Corpay
-group = Fuels
-
-### Another Organization Accounts
-[AnotherOrg Dev]
-aws_account_id = 111111111111
-defaults = AnotherOrg
-group = Development
-
-[AnotherOrg Prod]
-aws_account_id = 222222222222
-defaults = AnotherOrg
-group = Production
-
-### Development Accounts
-[Dev Sandbox]
-aws_account_id = 333333333333
-region = us-west-2
-roleName = Developer
-group = Development`;
+    return `# This is a comment`;
   }
 
   // Validate organizations configuration

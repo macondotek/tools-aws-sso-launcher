@@ -3,14 +3,17 @@
 ## Issue: Chrome Storage Quota Exceeded
 
 ### Error Message
+
 ```
 Unchecked runtime.lastError: Resource::kQuotaBytesPerItem quota exceeded
 ```
 
 ### What This Means
+
 Chrome's `chrome.storage.sync` has a limit of **8,192 bytes (8KB)** per item. Your AWS SSO configuration is too large to fit in this limit.
 
 ### Solution Implemented
+
 The extension now automatically handles this by:
 
 1. **Size Detection**: Checks if configuration exceeds 8KB limit
@@ -21,11 +24,13 @@ The extension now automatically handles this by:
 ### Storage Types
 
 #### `chrome.storage.sync` (8KB limit)
+
 - **Pros**: Syncs across devices, persists across browser restarts
 - **Cons**: Small size limit
 - **Use**: Small configurations only
 
 #### `chrome.storage.local` (No practical limit)
+
 - **Pros**: Large size limit, fast access
 - **Cons**: Device-specific, lost if browser data is cleared
 - **Use**: Large configurations
@@ -33,12 +38,15 @@ The extension now automatically handles this by:
 ### Configuration Size Optimization
 
 #### Automatic Compression
+
 The extension automatically compresses configurations by:
+
 - Removing comments (lines starting with `#`)
 - Removing empty lines
 - Trimming whitespace
 
 #### Manual Optimization Tips
+
 1. **Remove Comments**: Delete unnecessary comment lines
 2. **Minimize Whitespace**: Use single spaces instead of multiple
 3. **Short Names**: Use shorter account aliases
@@ -47,6 +55,7 @@ The extension automatically compresses configurations by:
 ### Example Size Reduction
 
 **Before Compression (Large):**
+
 ```ini
 ###################################################
 ### ORG Defaults to support multiple Orgs later on
@@ -68,6 +77,7 @@ group = CorpayComplete
 ```
 
 **After Compression (Smaller):**
+
 ```ini
 [Corpay]
 organization = true
@@ -83,7 +93,7 @@ group = CorpayComplete
 
 ### Status Messages
 
-The extension will show different status messages:
+ The extension will show different status messages:
 
 - `Configuration saved successfully ✓ (5KB)` - Small config, synced
 - `Configuration saved successfully ✓ (12KB, using local storage)` - Large config, local storage
@@ -92,6 +102,7 @@ The extension will show different status messages:
 ### Migration Handling
 
 The extension automatically:
+
 1. Tries to load from `chrome.storage.sync` first
 2. Falls back to `chrome.storage.local` if sync is empty
 3. Handles both old and new configuration formats

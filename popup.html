@@ -1,0 +1,431 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MTK AWS Launcher</title>
+  <style>
+    body { 
+      font: 14px system-ui, sans-serif; 
+      min-width: 380px; 
+      max-width: 420px;
+      padding: 12px; 
+      margin: 0;
+    }
+    
+    h3 { margin-top: 0; margin-bottom: 12px; color: #333; }
+    
+    #currentInfo { 
+      background: #f4f8fb; 
+      border-radius: 6px; 
+      padding: 10px; 
+      margin-bottom: 12px; 
+      font-size: 13px; 
+      color: #333; 
+      line-height: 1.4;
+    }
+    
+    .search { margin-bottom: 0; }
+    .search input { 
+      width: 100%; 
+      padding: 6px 8px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px; 
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    
+    .search-org-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .search-org-row .search {
+      flex: 1;
+    }
+    
+    .search-org-row .form-group {
+      flex: 0 0 120px;
+    }
+    
+    .search-org-row .form-group label {
+      font-size: 11px;
+      margin-bottom: 2px;
+      display: block;
+      color: #666;
+    }
+    
+    .search-org-row .form-group select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      background: white;
+      box-sizing: border-box;
+    }
+    
+    @media (max-width: 350px) {
+      .search-org-row .form-group {
+        flex: 0 0 100px;
+      }
+    }
+    
+    .groups-container {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    
+    .group {
+      margin-bottom: 8px;
+      border: 1px solid #e1e5e9;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .group-header {
+      background: #f8f9fa;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e1e5e9;
+      transition: background-color 0.2s;
+      min-height: 20px;
+    }
+    
+    .group-header:hover {
+      background: #e9ecef;
+    }
+    
+    .group-header.active {
+      background: #007bff;
+      color: white;
+    }
+    
+    .group-title {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .group-count {
+      background: #6c757d;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    
+    .group-header.active .group-count {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .group-right-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .group-arrow {
+      font-size: 12px;
+      transition: transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .group-arrow.expanded {
+      transform: rotate(90deg);
+    }
+    
+    .group-accounts {
+      display: none;
+      background: white;
+    }
+    
+    .group-accounts.expanded {
+      display: block;
+    }
+    
+    .account {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f3f4;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .account:hover {
+      background: #f8f9fa;
+    }
+    
+    .account.selected {
+      background: #e3f2fd;
+      border-left: 3px solid #2196f3;
+    }
+    
+    .account-info {
+      flex: 1;
+      cursor: pointer;
+    }
+    
+    .account-actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .account:hover .account-actions {
+      opacity: 1;
+    }
+    
+    .account-open-btn, .account-edit-btn, .account-copy-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    
+    .account-open-btn:hover {
+      background: #0056b3;
+    }
+    
+    .account-copy-btn {
+      background: #28a745;
+    }
+    
+    .account-copy-btn:hover {
+      background: #1e7e34;
+    }
+    
+    .account-edit-btn {
+      background: #6c757d;
+    }
+    
+    .account-edit-btn:hover {
+      background: #545b62;
+    }
+    
+    .account-name {
+      font-weight: 500;
+      font-size: 13px;
+      color: #333;
+    }
+    
+    .account-id {
+      font-size: 11px;
+      color: #666;
+      margin-top: 1px;
+    }
+    
+    .account-role {
+      font-size: 11px;
+      color: #007bff;
+      background: #f0f8ff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-top: 2px;
+      display: inline-block;
+    }
+    
+    .account-radio {
+      margin-right: 8px;
+    }
+    
+    .controls {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .control-group {
+      margin-bottom: 10px;
+    }
+    
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .control-group #roleSelect {
+      margin-bottom: 4px;
+    }
+    
+    label { 
+      display: block; 
+      margin-bottom: 4px; 
+      font-weight: 500;
+      font-size: 13px;
+      color: #555;
+    }
+    
+    input { 
+      width: 100%; 
+      padding: 6px 8px; 
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+    
+    button { 
+      margin-top: 0;
+      padding: 10px 16px; 
+      width: 100%; 
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background: #0056b3;
+    }
+    
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 11px;
+      color: #666;
+    }
+    
+    .footer a {
+      color: #007cba;
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      color: #005a87;
+      text-decoration: underline;
+    }
+    
+    .no-results {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .error-message, .success-message {
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    #currentInfo a {
+      color: #007cba !important;
+      text-decoration: none !important;
+      font-size: 16px !important;
+      transition: all 0.2s ease;
+      display: inline-block;
+      padding: 2px;
+      border-radius: 3px;
+    }
+    
+    #currentInfo a:hover {
+      color: #005a87 !important;
+      background-color: rgba(0, 123, 186, 0.1);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <h3 id="popupTitle">MTK AWS Launcher</h3>
+  <div id="currentInfo">Detecting AWS session...</div>
+
+  <div class="search-org-row">
+    <div class="search">
+      <input id="searchInput" placeholder="Search accounts..." />
+    </div>
+    <div class="form-group">
+      <select id="orgSelect">
+        <option value="">All</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="groupsContainer" class="groups-container">
+    <!-- Groups will be dynamically populated here -->
+  </div>
+
+  <div class="controls" style="display: none;">
+    <div class="control-group">
+      <label for="roleInput">Role</label>
+      <select id="roleSelect" style="display: none;">
+        <option value="">Select Role...</option>
+      </select>
+      <input id="roleInput" placeholder="FC-Admin" />
+    </div>
+    
+    <div class="control-group">
+      <label for="regionInput">Region</label>
+      <input id="regionInput" placeholder="us-east-1" />
+    </div>
+    
+    <div class="control-group">
+      <label for="destInput">Destination (optional)</label>
+      <input id="destInput" placeholder="Defaults to Console Home for region" />
+    </div>
+  </div>
+
+  <button id="openBtn" style="display: none;">Open Console</button>
+  
+    <div class="footer">
+      <small><a href="#" id="optionsLink">Configure groups and accounts in Options</a></small>
+      <br>
+      <small style="color: #999; margin-top: 4px; display: block;">&copy; 2025 <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">MacondoTek</a></small>
+    </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MTK AWS Launcher Options</title>
+  <style>
+    body { 
+      font: 14px system-ui, sans-serif; 
+      padding: 16px; 
+      max-width: 1400px; 
+      line-height: 1.5;
+      margin: 0 auto;
+    }
+    
+    .header {
+      border-bottom: 2px solid #e1e5e9;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      grid-column: 1 / -1;
+    }
+    
+    .header-title-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
+    .logo-container a {
+      text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+    
+    .logo-container a:hover {
+      transform: scale(1.05);
+    }
+    
+    .logo-container img {
+      height: 48px;
+      width: auto;
+      max-width: 160px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo-fallback {
+      display: none;
+      font-size: 20px;
+      font-weight: bold;
+      color: #007cba;
+      padding: 12px;
+      border: 2px solid #007cba;
+      border-radius: 6px;
+      background: #f8f9fa;
+      transition: all 0.2s ease;
+    }
+    
+    .logo-fallback:hover {
+      background: #e9ecef;
+      transform: scale(1.02);
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+    
+    .feature-box {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .feature-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-box h4 {
+      margin: 0 0 8px 0;
+      color: #007bff;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .feature-box p {
+      margin: 0;
+      color: #555;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    .main-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    
+    .instructions-column {
+      position: sticky;
+      top: 20px;
+    }
+    
+    .config-column {
+      min-width: 0;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label { 
+      display: block; 
+      margin-bottom: 6px; 
+      font-weight: 600;
+      color: #333;
+    }
+    
+    input { 
+      width: 100%; 
+      padding: 8px 12px; 
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    textarea { 
+      width: 100%; 
+      height: 250px; 
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    
+    #cfgText {
+      height: 500px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    
+    button { 
+      padding: 10px 16px; 
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #545b62;
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #1e7e34;
+    }
+    
+    #status {
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    
+    .status-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .status-warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      font-style: italic;
+    }
+    
+    .example-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .example-section h3 {
+      margin: 0 0 16px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    
+    .example-section h4 {
+      margin: 16px 0 8px 0;
+      color: #495057;
+      font-size: 16px;
+    }
+    
+    .example-section p {
+      margin: 8px 0;
+      color: #555;
+    }
+    
+    .example-config {
+      background: white;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      border: 1px solid #dee2e6;
+      overflow-x: auto;
+      margin: 12px 0;
+      white-space: pre;
+    }
+    
+    .validation-results {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 4px;
+      display: none;
+    }
+    
+    .validation-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .validation-warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    
+    .validation-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .config-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      margin-bottom: 20px;
+    }
+    
+    .config-section h3 {
+      margin: 0 0 16px 0;
+      color: #333;
+      font-size: 18px;
+    }
+    
+    ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+    
+    li {
+      margin: 4px 0;
+      color: #555;
+    }
+    
+    code {
+      background: #f1f3f4;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+    }
+    
+    @media (max-width: 1024px) {
+      .main-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .instructions-column {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title-container">
+      <div class="logo-container">
+        <a href="https://www.macondotek.com" target="_blank">
+          <img src="https://www.macondotek.com/assets/img/logos/logo_t.png" alt="MacondoTek Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div class="logo-fallback">MacondoTek</div>
+        </a>
+      </div>
+      <h2>AWS SSO Launcher – Configuration</h2>
+    </div>
+    <p>This plugin allows you to configure your multi-account AWS SSO settings to easily access the console with embedded links that authenticate you to the right account and role.</p>
+    <p style="text-align: center; margin: 16px 0; font-size: 14px;">
+      <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none; font-weight: 500;">🌐 Visit MacondoTek.com for more developer tools</a>
+    </p>
+    
+    <div class="features-grid">
+      <div class="feature-box">
+        <h4>🏢 Organizations</h4>
+        <p>Setup multiple AWS organizations with default region and role settings</p>
+      </div>
+      <div class="feature-box">
+        <h4>👥 Accounts</h4>
+        <p>Define accounts and group them for better organization in the popup</p>
+      </div>
+      <div class="feature-box">
+        <h4>🔗 Inheritance</h4>
+        <p>Use <code>defaults = OrganizationName</code> to inherit organization settings</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <!-- Left Column: Instructions -->
+    <div class="instructions-column">
+      <div class="example-section">
+        <h3>Configuration Guide</h3>
+
+        <h4>Organizations Configuration</h4>
+        <p>The Organizations section is used to define the defaults used by each defined account.</p>
+        <p>To configure an organization, you enter the default region, role name, SSO base URL, which will be used to create the links to the console.</p>
+        <p>You can also define alternative roles that will be shown on the edit form of the account link to login using an alternative role.</p>
+        
+        <div class="example-config">
+[OrganizationName] 
+region = us-east-1
+roleName = Administrator
+baseURL = https://d-XXXXXX.awsapps.com
+altRoles = Developer, PowerUser
+default = true
+
+[AnotherOrg]
+region = us-west-2
+roleName = Developer
+baseURL = https://d-123456.awsapps.com
+        </div>
+
+        <h4>Accounts Configuration</h4>
+        <p>The Accounts section is used to define the accounts that will be shown in the popup.</p>
+        <p>To configure an account, you enter the account ID, the organization it belongs to, and an additional group configuration is also available to group the accounts in the popup.</p>
+        <p>You can also override the default region and role name for the account.</p>
+        
+        <div class="example-config">
+[AccountName]
+aws_account_id = 123456789012
+defaults = OrganizationName
+group = GroupName
+
+[AnotherAccount]
+aws_account_id = 123456789012
+defaults = OrganizationName
+group = GroupName
+region = us-west-2 #override the default region
+roleName = Developer #override the default role name
+
+[AnotherAccount2]
+aws_account_id = 123456789012
+defaults = OrganizationName
+group = Group2 #this will be shown in the popup as a separate group
+        </div>
+        
+      
+    </div>
+    </div>
+
+    <!-- Right Column: Configuration -->
+    <div class="config-column">
+      <div class="config-section">
+        <h3>Configuration</h3>
+        
+        <div class="form-group">
+          <label for="orgConfigText">Organizations Configuration</label>
+          <textarea id="orgConfigText" placeholder="Enter your organizations configuration..."></textarea>
+          <div class="help-text">
+            Define your AWS organizations with region, role, and SSO base URL.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cfgText">Accounts Configuration</label>
+          <textarea id="cfgText" placeholder="Enter your accounts configuration..."></textarea>
+          <div class="help-text">
+            Define your AWS accounts with account IDs, defaults inheritance, and groups.
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button id="saveBtn" class="btn-primary">Save Configuration</button>
+          <button id="loadExampleBtn" class="btn-secondary">Load Example</button>
+          <button id="validateBtn" class="btn-secondary">Validate</button>
+          <span id="status"></span>
+        </div>
+
+        <div id="validationResults" class="validation-results"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config-parser.js"></script>
+  <script src="options.js"></script>
+  
+  <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e9ecef; text-align: center; color: #666; font-size: 12px;">
+    <p>&copy; 2025 <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">MacondoTek</a>. All rights reserved.</p>
+    <p>Licensed under the MIT License | <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">Visit MacondoTek.com</a></p>
+  </footer>
+</body>
+</html>

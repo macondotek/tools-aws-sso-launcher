@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MTK-AWSLauncher",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Group AWS accounts, search, and launch SSO console URLs with session awareness.",
   "action": {
     "default_popup": "popup.html"

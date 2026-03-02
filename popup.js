@@ -1,5 +1,6 @@
 const roleInput = document.getElementById("roleInput");
 const roleSelect = document.getElementById("roleSelect");
+const regionSelect = document.getElementById("regionSelect");
 const regionInput = document.getElementById("regionInput");
 const destInput = document.getElementById("destInput");
 const openBtn = document.getElementById("openBtn");
@@ -8,8 +9,13 @@ const currentInfo = document.getElementById("currentInfo");
 const groupsContainer = document.getElementById("groupsContainer");
 const orgSelect = document.getElementById("orgSelect");
 const optionsLink = document.getElementById("optionsLink");
+const versionDisplay = document.getElementById("versionDisplay");
 
 let cfg = null;
+
+if (versionDisplay) {
+  versionDisplay.textContent = chrome.runtime.getManifest().version;
+}
 let allAccounts = [];
 let selectedAccount = null;
 
@@ -461,9 +467,18 @@ function selectAccount(account, groupIndex, accountIndex) {
   
   // Update form fields with proper fallback chain
   const effectiveRole = account?.defaultRole || orgDefaults?.roleName || cfg?.defaults?.roleName || "FC-Admin";
-  const effectiveRegion = account?.defaultRegion || orgDefaults?.region || cfg?.defaults?.region || "us-east-1";
+  const effectiveRegion = (account?.defaultRegion || orgDefaults?.region || cfg?.defaults?.region || "us-east-1").trim();
   roleInput.value = effectiveRole;
-  regionInput.value = effectiveRegion;
+  const regionOpt = regionSelect.querySelector(`option[value="${effectiveRegion}"]`);
+  if (regionOpt) {
+    regionSelect.value = effectiveRegion;
+    regionInput.value = "";
+    regionInput.style.display = "none";
+  } else {
+    regionSelect.value = "OTHER";
+    regionInput.value = effectiveRegion;
+    regionInput.style.display = "block";
+  }
   destInput.value = "";
   
   // Enable the open button and show the form
@@ -481,6 +496,16 @@ searchInput.addEventListener("input", () => {
 
 orgSelect.addEventListener("change", () => {
   populateGroups(searchInput.value, orgSelect.value);
+});
+
+regionSelect.addEventListener("change", () => {
+  if (regionSelect.value === "OTHER") {
+    regionInput.style.display = "block";
+    regionInput.focus();
+  } else {
+    regionInput.style.display = "none";
+    regionInput.value = "";
+  }
 });
 
 roleSelect.addEventListener("change", handleRoleSelection);
@@ -520,7 +545,7 @@ openBtn.addEventListener("click", async () => {
     ? roleSelect.value 
     : roleInput.value;
   const roleName = (selectedRole || selectedAccount.defaultRole || orgDefaults?.roleName || cfg?.defaults?.roleName || "FC-Admin").trim();
-  const region = (regionInput.value || selectedAccount.defaultRegion || orgDefaults?.region || cfg?.defaults?.region || "us-east-1").trim();
+  const region = (regionSelect.value === "OTHER" ? regionInput.value : regionSelect.value || regionInput.value || selectedAccount.defaultRegion || orgDefaults?.region || cfg?.defaults?.region || "us-east-1").trim();
   const destinationUrl = (destInput.value || "").trim() || buildDefaultDestination(region);
 
   // console.log('SSO Launch Debug:', {

@@ -408,8 +408,16 @@
     </div>
     
     <div class="control-group">
-      <label for="regionInput">Region</label>
-      <input id="regionInput" placeholder="us-east-1" />
+      <label for="regionSelect">Region</label>
+      <select id="regionSelect">
+        <option value="us-east-1">us-east-1 (N. Virginia)</option>
+        <option value="ca-central-1">ca-central-1 (Canada)</option>
+        <option value="ap-south-1">ap-south-1 (Mumbai)</option>
+        <option value="ap-southeast-2">ap-southeast-2 (Sydney)</option>
+        <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+        <option value="OTHER">Other...</option>
+      </select>
+      <input id="regionInput" placeholder="e.g. me-south-1" style="display: none; margin-top: 6px;" />
     </div>
     
     <div class="control-group">
@@ -423,7 +431,7 @@
     <div class="footer">
       <small><a href="#" id="optionsLink">Configure groups and accounts in Options</a></small>
       <br>
-      <small style="color: #999; margin-top: 4px; display: block;">&copy; 2025 <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">MacondoTek</a></small>
+      <small style="color: #999; margin-top: 4px; display: block;">&copy; 2025 <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">MacondoTek</a> · v<span id="versionDisplay"></span></small>
     </div>
 
   <script src="popup.js"></script>

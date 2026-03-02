@@ -95,3 +95,4 @@ This project uses [Semantic Versioning](https://semver.org/):
 - [GitHub Repository](https://github.com/macondotek/tools-aws-sso-launcher)
 - [MacondoTek Website](https://www.macondotek.com)
 - [Chrome Web Store](https://chrome.google.com/webstore) (Coming Soon)
+

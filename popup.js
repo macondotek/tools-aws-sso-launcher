@@ -2,8 +2,8 @@ const roleInput = document.getElementById("roleInput");
 const roleSelect = document.getElementById("roleSelect");
 const regionSelect = document.getElementById("regionSelect");
 const regionInput = document.getElementById("regionInput");
-const destInput = document.getElementById("destInput");
 const openBtn = document.getElementById("openBtn");
+const openSsoHomeBtn = document.getElementById("openSsoHomeBtn");
 const searchInput = document.getElementById("searchInput");
 const currentInfo = document.getElementById("currentInfo");
 const groupsContainer = document.getElementById("groupsContainer");
@@ -24,6 +24,36 @@ function buildDefaultDestination(region) {
   // Use the AWS Management Console URL format that AWS SSO expects
   // This is the standard format for AWS Management Console URLs
   return `https://console.aws.amazon.com/console/home?region=${r}`;
+}
+
+function isAwsConsoleUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  return url.includes("console.aws.amazon.com");
+}
+
+/**
+ * Rewrite an AWS Console URL to use the given region (subdomain and/or region= query).
+ * Returns the same URL with region applied so the same service/page opens in the new region.
+ */
+function awsConsoleUrlWithRegion(url, newRegion) {
+  const r = (newRegion || "us-east-1").trim();
+  try {
+    const u = new URL(url);
+    if (!isAwsConsoleUrl(url)) return url;
+    // Region in subdomain: e.g. us-east-1.console.aws.amazon.com
+    const host = u.hostname;
+    if (host.endsWith(".console.aws.amazon.com")) {
+      const prefix = host.slice(0, -".console.aws.amazon.com".length);
+      if (prefix && prefix !== "console") {
+        u.hostname = `${r}.console.aws.amazon.com`;
+      }
+    }
+    // Region in query: ?region=us-east-1 or &region=us-east-1
+    u.searchParams.set("region", r);
+    return u.toString();
+  } catch (_) {
+    return url;
+  }
 }
 
 function buildAllAccountsList() {
@@ -60,8 +90,7 @@ function populateOrganizations() {
     });
   } else {
     // If no organizations defined, hide the dropdown
-    orgSelect.style.display = 'none';
-    orgSelect.previousElementSibling.style.display = 'none';
+    orgSelect.closest('.form-group').style.display = 'none';
   }
 }
 
@@ -171,10 +200,20 @@ function populateGroups(searchTerm = "", selectedOrg = "") {
       const openBtn = document.createElement("button");
       openBtn.className = "account-open-btn";
       openBtn.innerHTML = "▶";
-      openBtn.title = "Open with defaults";
+      openBtn.title = "Open with defaults (same tab)";
       openBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        openAccountWithDefaults(account);
+        openAccountWithDefaults(account, false);
+      });
+
+      // Create Open-in-new-tab button
+      const openNewTabBtn = document.createElement("button");
+      openNewTabBtn.className = "account-open-newtab-btn";
+      openNewTabBtn.innerHTML = "↗";
+      openNewTabBtn.title = "Open with defaults (new tab)";
+      openNewTabBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openAccountWithDefaults(account, true);
       });
       
       // Create Copy button
@@ -199,6 +238,7 @@ function populateGroups(searchTerm = "", selectedOrg = "") {
       });
       
       actionsContainer.appendChild(openBtn);
+      actionsContainer.appendChild(openNewTabBtn);
       actionsContainer.appendChild(copyBtn);
       actionsContainer.appendChild(editBtn);
       
@@ -285,7 +325,7 @@ function expandGroupForAccount(accountId) {
   }
 }
 
-function openAccountWithDefaults(account) {
+async function openAccountWithDefaults(account, openInNewTab = false) {
   // Get organization defaults if account references an organization
   let orgDefaults = {};
   if (account?.defaults && cfg?.organizations?.[account.defaults]) {
@@ -308,7 +348,12 @@ function openAccountWithDefaults(account) {
   // Use defaults with fallback chain
   const roleName = (account?.defaultRole || orgDefaults?.roleName || cfg?.defaults?.roleName || "FC-Admin").trim();
   const region = (account?.defaultRegion || orgDefaults?.region || cfg?.defaults?.region || "us-east-1").trim();
-  const destinationUrl = buildDefaultDestination(region);
+  let destinationUrl = buildDefaultDestination(region);
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const sourceTabId = tab?.id;
+  if (tab?.url && isAwsConsoleUrl(tab.url)) {
+    destinationUrl = awsConsoleUrlWithRegion(tab.url, region);
+  }
 
   // console.log('Quick Open Debug:', {
   //   accountId: account.accountId,
@@ -328,7 +373,9 @@ function openAccountWithDefaults(account) {
       roleName: roleName,
       region: region,
       ssoBaseUrl: ssoBaseUrl,
-      destinationUrl: destinationUrl
+      destinationUrl: destinationUrl,
+      openInNewTab,
+      sourceTabId
     }
   }, (response) => {
     if (chrome.runtime.lastError) {
@@ -357,6 +404,11 @@ function showAccountForm() {
   const openBtn = document.getElementById('openBtn');
   if (openBtn) {
     openBtn.style.display = 'block';
+  }
+
+  const openSsoHomeBtn = document.getElementById('openSsoHomeBtn');
+  if (openSsoHomeBtn) {
+    openSsoHomeBtn.style.display = 'block';
   }
 }
 
@@ -450,8 +502,8 @@ function selectAccount(account, groupIndex, accountIndex) {
     el.classList.remove("selected");
   });
   
-  // Add selection to clicked account
-  const accountElement = document.querySelector(`[data-account-id="${account.accountId}"]`);
+  // Add selection to clicked account using composite key to handle duplicate account IDs
+  const accountElement = document.querySelector(`[data-group-index="${groupIndex}"][data-account-index="${accountIndex}"]`);
   if (accountElement) {
     accountElement.classList.add("selected");
   }
@@ -479,8 +531,6 @@ function selectAccount(account, groupIndex, accountIndex) {
     regionInput.value = effectiveRegion;
     regionInput.style.display = "block";
   }
-  destInput.value = "";
-  
   // Enable the open button and show the form
   openBtn.disabled = false;
   showAccountForm();
@@ -546,7 +596,13 @@ openBtn.addEventListener("click", async () => {
     : roleInput.value;
   const roleName = (selectedRole || selectedAccount.defaultRole || orgDefaults?.roleName || cfg?.defaults?.roleName || "FC-Admin").trim();
   const region = (regionSelect.value === "OTHER" ? regionInput.value : regionSelect.value || regionInput.value || selectedAccount.defaultRegion || orgDefaults?.region || cfg?.defaults?.region || "us-east-1").trim();
-  const destinationUrl = (destInput.value || "").trim() || buildDefaultDestination(region);
+
+  // Reuse current AWS Console page if present; otherwise open console home for selected region.
+  let destinationUrl = buildDefaultDestination(region);
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (tab?.url && isAwsConsoleUrl(tab.url)) {
+    destinationUrl = awsConsoleUrlWithRegion(tab.url, region);
+  }
 
   // console.log('SSO Launch Debug:', {
   //   accountId: selectedAccount.accountId,
@@ -599,6 +655,40 @@ openBtn.addEventListener("click", async () => {
     openBtn.textContent = originalText;
     openBtn.disabled = false;
     showError(`Error launching SSO: ${error.message}`);
+  }
+});
+
+openSsoHomeBtn.addEventListener("click", async () => {
+  // Prefer selected account organization-level SSO URL when available.
+  let orgDefaults = {};
+  if (selectedAccount?.defaults && cfg?.organizations?.[selectedAccount.defaults]) {
+    orgDefaults = cfg.organizations[selectedAccount.defaults];
+  }
+
+  const ssoBaseUrl = (orgDefaults?.ssoBaseUrl || cfg?.ssoBaseUrl || "").trim().replace(/\/+$/, "");
+  if (!ssoBaseUrl) {
+    showError("Missing SSO Base URL in Options. Please configure your SSO URL first.");
+    return;
+  }
+
+  if (!isValidUrl(ssoBaseUrl)) {
+    showError("Invalid SSO Base URL format. Please check your configuration.");
+    return;
+  }
+
+  const ssoHomeUrl = `${ssoBaseUrl}/start/#/`;
+  const originalText = openSsoHomeBtn.textContent;
+  openSsoHomeBtn.textContent = "Opening...";
+  openSsoHomeBtn.disabled = true;
+
+  try {
+    await chrome.tabs.create({ url: ssoHomeUrl, active: true });
+    showSuccess("SSO home opened.");
+  } catch (error) {
+    showError(`Failed to open SSO home: ${error.message}`);
+  } finally {
+    openSsoHomeBtn.textContent = originalText;
+    openSsoHomeBtn.disabled = false;
   }
 });
 

@@ -111,7 +111,7 @@ Organizations can define multiple roles for accounts:
 region = us-east-1
 roleName = Administrator
 baseURL = https://d-XXXXX.awsapps.com
-altRoles = ["ReadOnly", "PowerUser", "CustomRole"]
+altRoles = ReadOnly, PowerUser, CustomRole
 ```
 
 #### Account-Specific Overrides

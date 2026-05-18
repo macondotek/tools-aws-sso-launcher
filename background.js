@@ -167,7 +167,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           return currentSession || {};
 
         case "OPEN_AWS_SSO":
-          handleSSOLaunch(msg.payload);
+          await handleSSOLaunch(msg.payload);
           return { ok: true };
 
         case "REFRESH_SESSION":
@@ -231,8 +231,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-function handleSSOLaunch(payload) {
-  const { ssoBaseUrl, accountId, roleName, destinationUrl } = payload;
+async function handleSSOLaunch(payload) {
+  const { ssoBaseUrl, accountId, roleName, destinationUrl, openInNewTab = true, sourceTabId } = payload;
   
   // Validate required parameters
   if (!ssoBaseUrl || !accountId || !roleName) {
@@ -251,11 +251,32 @@ function handleSSOLaunch(payload) {
   // console.log('Destination URL:', destinationUrl);
   // console.log('Encoded destination:', destinationEncoded);
 
-  // Create new tab with SSO URL
-  chrome.tabs.create({ 
-    url: ssoUrlString,
-    active: true // Focus the new tab
-  });
+  if (openInNewTab) {
+    // Create new tab with SSO URL
+    chrome.tabs.create({
+      url: ssoUrlString,
+      active: true // Focus the new tab
+    });
+  } else {
+    // Reuse current active tab for same-tab quick-open behavior
+    if (sourceTabId) {
+      chrome.tabs.update(sourceTabId, {
+        url: ssoUrlString,
+        active: true
+      });
+    } else {
+      const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      if (activeTab?.id) {
+        chrome.tabs.update(activeTab.id, {
+          url: ssoUrlString,
+          active: true
+        });
+      } else {
+        // Fallback if no active tab is available
+        chrome.tabs.create({ url: ssoUrlString, active: true });
+      }
+    }
+  }
 
   // console.log(`SSO launched for account ${accountId} with role ${roleName}`);
 }

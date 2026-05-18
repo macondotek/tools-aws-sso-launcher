@@ -1,0 +1,45 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package extension
+        run: |
+          zip -r MTK-AWSLauncher.zip \
+            manifest.json \
+            background.js \
+            content.js \
+            popup.js \
+            popup.html \
+            options.js \
+            options.html \
+            config-parser.js \
+            icons/ \
+            LICENSE \
+            README.md \
+            CHANGELOG.md
+
+      - name: Upload to Chrome Web Store
+        uses: fregante/chrome-webstore-upload-action@v2
+        with:
+          extension-id: copkcllbbkddonhallnciffiiedddkjk
+          zip-path: MTK-AWSLauncher.zip
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          skip-submit-review: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: MTK-AWSLauncher.zip
+          generate_release_notes: true

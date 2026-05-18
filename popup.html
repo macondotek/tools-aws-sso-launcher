@@ -193,7 +193,7 @@
       opacity: 1;
     }
     
-    .account-open-btn, .account-edit-btn, .account-copy-btn {
+    .account-open-btn, .account-open-newtab-btn, .account-edit-btn, .account-copy-btn {
       background: #007bff;
       color: white;
       border: none;
@@ -210,6 +210,14 @@
     
     .account-open-btn:hover {
       background: #0056b3;
+    }
+
+    .account-open-newtab-btn {
+      background: #17a2b8;
+    }
+
+    .account-open-newtab-btn:hover {
+      background: #117a8b;
     }
     
     .account-copy-btn {
@@ -420,13 +428,10 @@
       <input id="regionInput" placeholder="e.g. me-south-1" style="display: none; margin-top: 6px;" />
     </div>
     
-    <div class="control-group">
-      <label for="destInput">Destination (optional)</label>
-      <input id="destInput" placeholder="Defaults to Console Home for region" />
-    </div>
   </div>
 
   <button id="openBtn" style="display: none;">Open Console</button>
+  <button id="openSsoHomeBtn" style="display: none; margin-top: 8px; background: #17a2b8;">Open SSO Home</button>
   
     <div class="footer">
       <small><a href="#" id="optionsLink">Configure groups and accounts in Options</a></small>

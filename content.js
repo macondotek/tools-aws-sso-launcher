@@ -26,7 +26,6 @@
           try {
             const result = await method();
             if (result && result.accountId) {
-              // // console.log(`AWS session detected via ${method.name} (attempt ${attempt + 1})`);
               return {
                 ...result,
                 timestamp: Date.now(),
@@ -35,7 +34,6 @@
               };
             }
           } catch (error) {
-            // // console.warn(`Detection method ${method.name} failed:`, error);
           }
         }
 
@@ -45,26 +43,21 @@
         }
       }
 
-      // // console.warn("No AWS session detected after all attempts");
       return null;
     }
 
     detectFromAWSCSessionMeta() {
       // Method 0: Check AWS Console's session meta tag (most reliable)
-      // // console.log('Detecting from AWS Console session meta tag...');
       
       try {
         const metaTag = document.querySelector('meta[name="awsc-session-data"]');
         if (metaTag && metaTag.content) {
-          // // console.log('Found AWS Console session meta tag:', metaTag.content);
           
           // Parse the JSON content
           let sessionData;
           try {
             sessionData = JSON.parse(metaTag.content);
-            // // console.log('Parsed session data:', sessionData);
           } catch (parseError) {
-            // // console.warn('Failed to parse session data JSON:', parseError);
             return null;
           }
           
@@ -74,7 +67,6 @@
           const displayName = sessionData.displayName;
           
           if (accountId && /^\d{12}$/.test(accountId)) {
-            // // console.log(`Found account ID from session meta: ${accountId}`);
             
             // Extract role name from sessionARN
             let roleName = null;
@@ -82,7 +74,6 @@
               const arnMatch = sessionARN.match(/arn:aws:sts::\d{12}:assumed-role\/([^\/]+)\//);
               if (arnMatch) {
                 roleName = arnMatch[1];
-                // // console.log(`Extracted role name from ARN: ${roleName}`);
               }
             }
             
@@ -101,7 +92,6 @@
           }
         }
       } catch (error) {
-        // // console.warn('Error reading AWS Console session meta tag:', error);
       }
       
       return null;
@@ -109,17 +99,14 @@
 
     detectFromURL() {
       // Method 0: Check URL for account context
-      // // console.log('Detecting from URL...');
       
       const url = window.location.href;
-      // // console.log('Current URL:', url);
       
       // Check for account ID in URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const accountIdParam = urlParams.get('account_id') || urlParams.get('accountId') || urlParams.get('account');
       
       if (accountIdParam && /^\d{12}$/.test(accountIdParam)) {
-        // // console.log(`Found account ID in URL parameter: ${accountIdParam}`);
         return {
           accountId: accountIdParam,
           roleName: null, // Role usually not in URL
@@ -131,7 +118,6 @@
       // Check for account ID in URL path or hash
       const urlMatch = url.match(/\/(\d{12})\//);
       if (urlMatch) {
-        // // console.log(`Found account ID in URL path: ${urlMatch[1]}`);
         return {
           accountId: urlMatch[1],
           roleName: null,
@@ -146,7 +132,6 @@
         const hashAccountId = hashParams.get('account_id') || hashParams.get('accountId');
         
         if (hashAccountId && /^\d{12}$/.test(hashAccountId)) {
-          // // console.log(`Found account ID in URL hash: ${hashAccountId}`);
           return {
             accountId: hashAccountId,
             roleName: hashParams.get('role_name') || hashParams.get('roleName'),
@@ -158,13 +143,11 @@
       
       // Check if we're on an AWS Console page and look for the current account in the page title or meta
       if (url.includes('console.aws.amazon.com')) {
-        // // console.log('On AWS Console page, checking for current account context...');
         
         // Check page title for account context
         const title = document.title;
         const titleMatch = title.match(/(\d{12})/);
         if (titleMatch) {
-          // // console.log(`Found account ID in page title: ${titleMatch[1]}`);
           return {
             accountId: titleMatch[1],
             roleName: null,
@@ -179,13 +162,11 @@
 
     detectFromAWSConsoleData() {
       // Method 1: Check AWS Console's internal data structures
-      // // console.log('Detecting from AWS Console data...');
       
       try {
         // Check for AWS Console's internal configuration
         const awsConsoleConfig = window.awsConsoleConfig || window.AWS_CONSOLE_CONFIG;
         if (awsConsoleConfig && awsConsoleConfig.accountId) {
-          // // console.log('Found AWS Console config account:', awsConsoleConfig.accountId);
           return {
             accountId: awsConsoleConfig.accountId,
             roleName: awsConsoleConfig.roleName || awsConsoleConfig.assumedRoleName,
@@ -197,7 +178,6 @@
         // Check for AWS Console's session data
         const sessionData = window.awsConsoleSession || window.AWS_CONSOLE_SESSION;
         if (sessionData && sessionData.accountId) {
-          // // console.log('Found AWS Console session account:', sessionData.accountId);
           return {
             accountId: sessionData.accountId,
             roleName: sessionData.roleName || sessionData.assumedRoleName,
@@ -209,7 +189,6 @@
         // Check for AWS Console's user context
         const userContext = window.awsConsoleUserContext || window.AWS_CONSOLE_USER_CONTEXT;
         if (userContext && userContext.accountId) {
-          // // console.log('Found AWS Console user context account:', userContext.accountId);
           return {
             accountId: userContext.accountId,
             roleName: userContext.roleName || userContext.assumedRoleName,
@@ -221,7 +200,6 @@
         // Check for AWS Console's current account data
         const currentAccount = window.awsConsoleCurrentAccount || window.AWS_CONSOLE_CURRENT_ACCOUNT;
         if (currentAccount && currentAccount.accountId) {
-          // // console.log('Found AWS Console current account:', currentAccount.accountId);
           return {
             accountId: currentAccount.accountId,
             roleName: currentAccount.roleName || currentAccount.assumedRoleName,
@@ -233,7 +211,6 @@
         // Check for AWS Console's navigation data
         const navData = window.awsConsoleNav || window.AWS_CONSOLE_NAV;
         if (navData && navData.currentAccount) {
-          // // console.log('Found AWS Console nav current account:', navData.currentAccount);
           return {
             accountId: navData.currentAccount,
             roleName: navData.currentRole || navData.assumedRoleName,
@@ -245,7 +222,6 @@
         // Check for AWS Console's page data
         const pageData = window.awsConsolePageData || window.AWS_CONSOLE_PAGE_DATA;
         if (pageData && pageData.accountId) {
-          // // console.log('Found AWS Console page data account:', pageData.accountId);
           return {
             accountId: pageData.accountId,
             roleName: pageData.roleName || pageData.assumedRoleName,
@@ -255,7 +231,6 @@
         }
         
       } catch (error) {
-        // // console.warn('Error checking AWS Console data:', error);
       }
       
       return null;
@@ -263,7 +238,6 @@
 
     detectFromBreadcrumbs() {
       // Method 1: Check AWS Console breadcrumbs for current account
-      // console.log('Detecting from breadcrumbs...');
       
       const breadcrumbSelectors = [
         // AWS Console breadcrumb navigation
@@ -288,7 +262,6 @@
           const elements = document.querySelectorAll(selector);
           for (const element of elements) {
             const text = element.textContent || element.innerText || '';
-            // console.log(`Checking breadcrumb element:`, element, text);
             
             // Look for account ID in breadcrumb text
             const accountMatch = text.match(/(\d{12})/);
@@ -301,7 +274,6 @@
                                      element.closest('.awsui-breadcrumb');
               
               if (isCurrentContext) {
-                // console.log(`Found current account in breadcrumbs: ${accountMatch[1]}`, text);
                 
                 // Try to extract role from breadcrumb context
                 let roleName = null;
@@ -331,7 +303,6 @@
             }
           }
         } catch (error) {
-          // console.warn(`Error with breadcrumb selector ${selector}:`, error);
         }
       }
       
@@ -340,7 +311,6 @@
 
     detectFromCurrentSession() {
       // Method 0: Look for current session information in AWS Console
-      // console.log('Detecting current session...');
       
       // Look for AWS Console's current session indicators
       const currentSessionSelectors = [
@@ -366,7 +336,6 @@
           const elements = document.querySelectorAll(selector);
           for (const element of elements) {
             const text = element.textContent || element.innerText || '';
-            // console.log(`Checking element for current session:`, element, text);
             
             // Look for account ID in current session context
             const accountMatch = text.match(/(\d{12})/);
@@ -379,7 +348,6 @@
                                      element.closest('.awsui-context-info');
               
               if (isCurrentSession) {
-                // console.log(`Found current session account: ${accountMatch[1]}`, text);
                 
                 // Try to extract role from nearby elements or parent context
                 let roleName = null;
@@ -413,7 +381,6 @@
             }
           }
         } catch (error) {
-          // console.warn(`Error with selector ${selector}:`, error);
         }
       }
       
@@ -421,7 +388,6 @@
       try {
         // Look for AWS Console's internal session data in window object
         if (window.awsConsoleConfig && window.awsConsoleConfig.accountId) {
-          // console.log('Found AWS Console config account:', window.awsConsoleConfig.accountId);
           return {
             accountId: window.awsConsoleConfig.accountId,
             roleName: window.awsConsoleConfig.roleName || null,
@@ -442,7 +408,6 @@
           try {
             const value = this.getNestedProperty(window, indicator.replace('window.', ''));
             if (value && value.accountId) {
-              // console.log(`Found session indicator ${indicator}:`, value);
               return {
                 accountId: value.accountId,
                 roleName: value.roleName || null,
@@ -455,7 +420,6 @@
           }
         }
       } catch (error) {
-        // console.warn('Error checking AWS Console session data:', error);
       }
       
       return null;
@@ -504,15 +468,12 @@
         try {
           const element = document.querySelector(selector);
           if (element) {
-            // console.log(`Found element with selector: ${selector}`, element);
             const accountInfo = this.parseAccountFromElement(element);
             if (accountInfo) {
-              // console.log(`Successfully parsed account info from ${selector}:`, accountInfo);
               return accountInfo;
             }
           }
         } catch (error) {
-          // console.warn(`Error with selector ${selector}:`, error);
         }
       }
 
@@ -531,9 +492,8 @@
       for (const selector of prioritySelectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
-          const accountInfo = this.extractAccountFromElement(element);
+          const accountInfo = this.parseAccountFromElement(element);
           if (accountInfo) {
-            // console.log(`Found account info in priority area ${selector}:`, accountInfo);
             return accountInfo;
           }
         }
@@ -559,7 +519,6 @@
           const matches = text.match(accountIdPattern);
           if (matches) {
             const accountId = matches[0];
-            // console.log(`Found account ID in text content: ${accountId}`, text);
             
             // Score this match based on context
             let score = 0;
@@ -619,46 +578,12 @@
       }
       
       if (bestMatch) {
-        // console.log(`Best account match with score ${bestScore}:`, bestMatch);
         return bestMatch;
       }
       
       return null;
     }
     
-    extractAccountFromElement(element) {
-      const text = element.textContent || element.getAttribute('aria-label') || '';
-      
-      // Look for AWS account ID (12 digits)
-      const accountMatch = text.match(/(\d{12})/);
-      if (!accountMatch) return null;
-
-      // Look for role name (various patterns)
-      const rolePatterns = [
-        /(\w+@\w+)/,                    // user@account
-        /Role:\s*(\w+)/i,               // Role: AdminRole
-        /role[:\s]+(\w+)/i,             // role: AdminRole
-        /assumed-role[\/](\w+)/i,       // assumed-role/AdminRole
-        /(\w+)\s*\(\d{12}\)/            // AdminRole (123456789012)
-      ];
-
-      let roleName = null;
-      for (const pattern of rolePatterns) {
-        const match = text.match(pattern);
-        if (match) {
-          roleName = match[1];
-          break;
-        }
-      }
-
-      return {
-        accountId: accountMatch[1],
-        roleName: roleName,
-        region: this.getRegionFromPage(),
-        sessionValid: true
-      };
-    }
-
     detectFromHeaderElements() {
       // Method 2: Check for AWS Console's header elements
       const headerSelectors = [
@@ -723,7 +648,6 @@
           }
         }
       } catch (error) {
-        // console.warn('Cookie detection failed:', error);
       }
 
       return null;
@@ -750,7 +674,6 @@
           try {
             const value = this.getNestedProperty(window, varPath.replace('window.', ''));
             if (value) {
-              // console.log(`Found global variable ${varPath}:`, value);
               
               // Extract account ID from various formats
               let accountId = null;
@@ -795,7 +718,6 @@
           }
         }
       } catch (error) {
-        // console.warn('Global variable detection failed:', error);
       }
 
       return null;
@@ -819,7 +741,6 @@
                            element.getAttribute('data-account');
           
           if (accountId && /^\d{12}$/.test(accountId)) {
-            // console.log(`Found account ID in data attribute: ${accountId}`);
             return {
               accountId: accountId,
               roleName: null,
@@ -829,7 +750,6 @@
           }
         }
       } catch (error) {
-        // console.warn('Network/data attribute detection failed:', error);
       }
 
       return null;
@@ -939,66 +859,39 @@
   window.awsSSODebug = {
     detectSession: () => detector.detectSession(),
     debugPage: () => {
-      // console.log('=== AWS Console Page Debug Info ===');
-      // console.log('URL:', window.location.href);
-      // console.log('Title:', document.title);
-      
-      // Check for common AWS elements
-      const selectors = [
-        '[data-testid*="account"]',
-        '[aria-label*="account"]',
-        '[title*="account"]',
-        '.awsui-context-info',
-        '.nav-account',
-        '#nav-usernameMenu'
-      ];
-      
-      selectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        if (elements.length > 0) {
-          // console.log(`Found ${elements.length} elements with selector: ${selector}`, elements);
-        }
+      const info = {
+        url: window.location.href,
+        title: document.title,
+        elements: {},
+        globalVars: {},
+        accountIds: []
+      };
+
+      ['[data-testid*="account"]', '[aria-label*="account"]', '[title*="account"]',
+       '.awsui-context-info', '.nav-account', '#nav-usernameMenu'].forEach(sel => {
+        const count = document.querySelectorAll(sel).length;
+        if (count) info.elements[sel] = count;
       });
-      
-      // Check for global variables
-      const globalVars = ['AWS_CONSOLE_CONFIG', 'awsConsoleConfig', 'AWS_ACCOUNT_ID', 'awsAccountId'];
-      globalVars.forEach(varName => {
-        if (window[varName] !== undefined) {
-          // console.log(`Global variable ${varName}:`, window[varName]);
-        }
+
+      ['AWS_CONSOLE_CONFIG', 'awsConsoleConfig', 'AWS_ACCOUNT_ID', 'awsAccountId'].forEach(v => {
+        if (window[v] !== undefined) info.globalVars[v] = window[v];
       });
-      
-      // Check for account ID pattern in text
-      const textWalker = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-      );
-      
-      const accountIdPattern = /\b(\d{12})\b/g;
+
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+      const seen = new Set();
       let node;
-      let foundAccounts = new Set();
-      
-      while (node = textWalker.nextNode()) {
-        const text = node.textContent;
-        if (text && accountIdPattern.test(text)) {
-          const matches = text.match(accountIdPattern);
-          matches.forEach(match => foundAccounts.add(match));
-        }
+      while (node = walker.nextNode()) {
+        const matches = node.textContent.match(/\b(\d{12})\b/g);
+        if (matches) matches.forEach(id => seen.add(id));
       }
-      
-      if (foundAccounts.size > 0) {
-        // console.log('Found account IDs in text content:', Array.from(foundAccounts));
-      }
-      
-      // console.log('=== End Debug Info ===');
+      info.accountIds = Array.from(seen);
+
+      return info;
     }
   };
   
   // Message handler for background script communication
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    // console.log('Content script received message:', msg.type);
     
     switch (msg.type) {
       case "PING":
@@ -1008,7 +901,6 @@
 
       case "DETECT_SESSION":
         detector.detectSession().then(sessionInfo => {
-          // console.log('DETECT_SESSION result:', sessionInfo);
           if (sessionInfo) {
             chrome.runtime.sendMessage({
               type: "AWS_ACCOUNT_INFO",
@@ -1037,92 +929,16 @@
         });
         return true; // Keep message channel open for async response
 
-      case "DEBUG_SESSION":
-        // console.log('=== AWS SSO LAUNCHER DEBUG SESSION ===');
-        // console.log('Page URL:', window.location.href);
-        // console.log('Page title:', document.title);
-        
-        // Run debug page analysis
-        if (window.awsSSODebug) {
-          window.awsSSODebug.debugPage();
-        }
-        
-        detector.detectSession().then(sessionInfo => {
-          // console.log('=== SESSION DETECTION RESULTS ===');
-          if (sessionInfo) {
-            // console.log('✅ Session detected:', sessionInfo);
-            // console.log('Account ID:', sessionInfo.accountId);
-            // console.log('Role:', sessionInfo.roleName || 'Not detected');
-            // console.log('Region:', sessionInfo.region || 'Not detected');
-            // console.log('Session Valid:', sessionInfo.sessionValid);
-            // console.log('Detection Method:', sessionInfo.detectionMethod || 'Unknown');
-            
-            if (sessionInfo.sessionARN) {
-              // console.log('Session ARN:', sessionInfo.sessionARN);
-            }
-            if (sessionInfo.displayName) {
-              // console.log('Display Name:', sessionInfo.displayName);
-            }
-            
-            // Send to background script for storage
-            chrome.runtime.sendMessage({
-              type: "AWS_ACCOUNT_INFO",
-              payload: sessionInfo
-            }).catch(error => {
-              // console.warn('Failed to send session info to background:', error);
-            });
-          } else {
-            // console.log('❌ No session detected');
-            // console.log('Available account IDs on page:');
-            const walker = document.createTreeWalker(
-              document.body,
-              NodeFilter.SHOW_TEXT,
-              null,
-              false
-            );
-            const accountIds = new Set();
-            let node;
-            while (node = walker.nextNode()) {
-              const matches = node.textContent.match(/\b(\d{12})\b/g);
-              if (matches) {
-                matches.forEach(id => accountIds.add(id));
-              }
-            }
-            // console.log('Found account IDs:', Array.from(accountIds));
-          }
-          // console.log('=== END DEBUG SESSION ===');
-          sendResponse({ success: true, sessionInfo, debug: true });
-        }).catch(error => {
-          // console.error('Debug session detection failed:', error);
-          sendResponse({ success: false, error: error.message });
-        });
-        return true;
-
       default:
-        // console.log('Unknown message type:', msg.type);
         sendResponse({ error: "Unknown message type" });
     }
   });
   
-  // Initialize and run detection
-  // console.log('AWS SSO Launcher content script loaded');
-  
-  // Run detection immediately
   detector.detectSession().then(sessionInfo => {
     if (sessionInfo) {
-      // console.log('Initial session detection successful:', sessionInfo);
-      chrome.runtime.sendMessage({
-        type: "AWS_ACCOUNT_INFO",
-        payload: sessionInfo
-      }).catch(error => {
-        // console.warn('Failed to send session info:', error);
-      });
-    } else {
-      // console.log('Initial session detection found no session');
+      chrome.runtime.sendMessage({ type: "AWS_ACCOUNT_INFO", payload: sessionInfo }).catch(() => {});
     }
-  }).catch(error => {
-    // console.warn('Initial session detection failed:', error);
-  });
+  }).catch(() => {});
 
   // Also run detection when page content changes (for SPA navigation)
   let lastUrl = window.location.href;
@@ -1141,12 +957,7 @@
       detectionTimeout = setTimeout(() => {
         detector.detectSession().then(sessionInfo => {
           if (sessionInfo) {
-            chrome.runtime.sendMessage({
-              type: "AWS_ACCOUNT_INFO",
-              payload: sessionInfo
-            }).catch(error => {
-              // console.warn('Failed to send session info after navigation:', error);
-            });
+            chrome.runtime.sendMessage({ type: "AWS_ACCOUNT_INFO", payload: sessionInfo }).catch(() => {});
           }
         });
       }, 1000);

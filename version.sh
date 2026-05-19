@@ -116,14 +116,12 @@ case "${1:-}" in
         
         # Create tag
         create_tag "$new_version"
-        
-        echo ""
-        echo -e "${YELLOW}Next steps:${NC}"
-        echo "1. Push changes: git push origin main"
-        echo "2. Push tags: git push origin --tags"
-        echo "3. Create GitHub release for v$new_version"
+
+        # Push commits and tag to trigger CI/CD
+        git push origin main --tags
+        echo -e "${GREEN}✓${NC} Pushed to origin — CI/CD will package and publish to Chrome Web Store"
         ;;
-        
+
     "set")
         if [ -z "${2:-}" ]; then
             echo -e "${RED}✗${NC} Please provide a version number"
@@ -155,14 +153,12 @@ case "${1:-}" in
         
         # Create tag
         create_tag "$new_version"
-        
-        echo ""
-        echo -e "${YELLOW}Next steps:${NC}"
-        echo "1. Push changes: git push origin main"
-        echo "2. Push tags: git push origin --tags"
-        echo "3. Create GitHub release for v$new_version"
+
+        # Push commits and tag to trigger CI/CD
+        git push origin main --tags
+        echo -e "${GREEN}✓${NC} Pushed to origin — CI/CD will package and publish to Chrome Web Store"
         ;;
-        
+
     "show")
         current_version=$(get_current_version)
         echo -e "${BLUE}Current version:${NC} $current_version"

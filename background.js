@@ -35,10 +35,8 @@ async function loadSessionData() {
     if (data) {
       lastAccountInfo = data.lastAccountInfo;
       sessionTimestamp = data.sessionTimestamp;
-      // console.log('Session data loaded from storage:', data);
     }
   } catch (error) {
-    // console.warn('Failed to load session data:', error);
   }
 }
 
@@ -52,9 +50,7 @@ async function saveSessionData() {
     };
     
     await chrome.storage.local.set({ [SESSION_CONFIG.STORAGE_KEY]: data });
-    // console.log('Session data saved to storage');
   } catch (error) {
-    // console.warn('Failed to save session data:', error);
   }
 }
 
@@ -92,7 +88,6 @@ async function updateSessionInfo(payload) {
     // Start validation timer if not already running
     startSessionValidation();
     
-    // console.log(`Session updated: ${payload.accountId} (${payload.roleName || 'unknown role'})`);
   }
 }
 
@@ -103,7 +98,6 @@ function startSessionValidation() {
 
   validationTimer = setInterval(() => {
     if (lastAccountInfo && isSessionNearExpiry(lastAccountInfo)) {
-      // console.log('Session near expiry, attempting refresh...');
       refreshSession();
     }
   }, SESSION_CONFIG.VALIDATION_INTERVAL);
@@ -113,7 +107,6 @@ function refreshSession() {
   // Find active AWS Console tabs and request fresh session info
   chrome.tabs.query({ url: "https://*.console.aws.amazon.com/*" }, (tabs) => {
     if (tabs.length === 0) {
-      // console.log('No active AWS Console tabs found for session refresh');
       return;
     }
 
@@ -122,9 +115,7 @@ function refreshSession() {
     
     chrome.tabs.sendMessage(activeTab.id, { type: "REFRESH_SESSION" }, (response) => {
       if (chrome.runtime.lastError) {
-        // console.warn('Failed to refresh session:', chrome.runtime.lastError.message);
       } else if (response && response.success) {
-        // console.log('Session refreshed successfully');
       }
     });
   });
@@ -139,12 +130,10 @@ function clearSession() {
     validationTimer = null;
   }
   
-  // console.log('Session cleared');
 }
 
 // Message handler with async support
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  // console.log('Background script received message:', msg?.type);
   
   // Handle async operations
   const handleAsync = async () => {
@@ -197,11 +186,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           return { pong: true, timestamp: Date.now() };
 
         default:
-          // console.warn('Unknown message type:', msg?.type);
           return { error: 'Unknown message type' };
       }
     } catch (error) {
-      // console.error('Error handling message:', error);
       return { error: error.message };
     }
   };
@@ -225,7 +212,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse(result);
       }
     } catch (error) {
-      // console.error('Error handling sync message:', error);
       sendResponse({ error: error.message });
     }
   }
@@ -247,9 +233,6 @@ async function handleSSOLaunch(payload) {
   const destinationEncoded = encodeURIComponent(destinationUrl);
   const ssoUrlString = `${baseUrl}/start/#/console?account_id=${accountId}&role_name=${encodeURIComponent(roleName)}&destination=${destinationEncoded}`;
 
-  // console.log('Generated SSO URL:', ssoUrlString);
-  // console.log('Destination URL:', destinationUrl);
-  // console.log('Encoded destination:', destinationEncoded);
 
   if (openInNewTab) {
     // Create new tab with SSO URL
@@ -278,12 +261,10 @@ async function handleSSOLaunch(payload) {
     }
   }
 
-  // console.log(`SSO launched for account ${accountId} with role ${roleName}`);
 }
 
 // Initialize service worker
 async function initializeServiceWorker() {
-  // console.log('AWS SSO Launcher service worker starting...');
   
   // Load session data from storage
   await loadSessionData();
@@ -296,18 +277,15 @@ async function initializeServiceWorker() {
     startSessionValidation();
   }
   
-  // console.log('AWS SSO Launcher service worker initialized');
 }
 
 // Cleanup on extension startup
 chrome.runtime.onStartup.addListener(async () => {
-  // console.log('AWS SSO Launcher started');
   await initializeServiceWorker();
 });
 
 // Initialize when service worker starts
 chrome.runtime.onInstalled.addListener(async () => {
-  // console.log('AWS SSO Launcher installed/updated');
   await initializeServiceWorker();
 });
 
@@ -325,7 +303,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       chrome.tabs.sendMessage(tabId, { type: "DETECT_SESSION" }, (response) => {
         if (chrome.runtime.lastError) {
           // Content script might not be ready yet, ignore
-          // console.debug('Content script not ready for session detection');
         }
       });
     }, 1000);
@@ -340,7 +317,6 @@ chrome.tabs.onRemoved.addListener((tabId) => {
       setTimeout(() => {
         chrome.tabs.query({ url: "https://*.console.aws.amazon.com/*" }, (remainingTabs) => {
           if (remainingTabs.length === 0) {
-            // console.log('All AWS Console tabs closed, clearing session');
             clearSession();
           }
         });

@@ -16,7 +16,6 @@ let cfg = null;
 if (versionDisplay) {
   versionDisplay.textContent = chrome.runtime.getManifest().version;
 }
-let allAccounts = [];
 let selectedAccount = null;
 
 function buildDefaultDestination(region) {
@@ -54,28 +53,6 @@ function awsConsoleUrlWithRegion(url, newRegion) {
   } catch (_) {
     return url;
   }
-}
-
-function buildAllAccountsList() {
-  allAccounts = [];
-  
-  // Handle both array format (legacy) and object format (new two-field)
-  const groups = cfg?.groups || {};
-  const groupsArray = Array.isArray(groups) ? groups : Object.values(groups);
-  
-  groupsArray.forEach((group, groupIndex) => {
-    if (group && group.accounts && Array.isArray(group.accounts)) {
-      group.accounts.forEach((account, accountIndex) => {
-        allAccounts.push({
-          ...account,
-          groupName: group.name,
-          groupIndex,
-          accountIndex,
-          fullPath: `${group.name} > ${account.alias || account.name || account.accountId}`
-        });
-      });
-    }
-  });
 }
 
 function populateOrganizations() {
@@ -197,11 +174,11 @@ function populateGroups(searchTerm = "", selectedOrg = "") {
       actionsContainer.className = "account-actions";
       
       // Create Open button
-      const openBtn = document.createElement("button");
-      openBtn.className = "account-open-btn";
-      openBtn.innerHTML = "▶";
-      openBtn.title = "Open with defaults (same tab)";
-      openBtn.addEventListener("click", (e) => {
+      const quickOpenBtn = document.createElement("button");
+      quickOpenBtn.className = "account-open-btn";
+      quickOpenBtn.innerHTML = "▶";
+      quickOpenBtn.title = "Open with defaults (same tab)";
+      quickOpenBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         openAccountWithDefaults(account, false);
       });
@@ -237,7 +214,7 @@ function populateGroups(searchTerm = "", selectedOrg = "") {
         showAccountForm();
       });
       
-      actionsContainer.appendChild(openBtn);
+      actionsContainer.appendChild(quickOpenBtn);
       actionsContainer.appendChild(openNewTabBtn);
       actionsContainer.appendChild(copyBtn);
       actionsContainer.appendChild(editBtn);
@@ -355,7 +332,6 @@ async function openAccountWithDefaults(account, openInNewTab = false) {
     destinationUrl = awsConsoleUrlWithRegion(tab.url, region);
   }
 
-  // console.log('Quick Open Debug:', {
   //   accountId: account.accountId,
   //   accountDefaults: account.defaults,
   //   orgDefaults: orgDefaults,
@@ -397,7 +373,6 @@ function showAccountForm() {
   const controls = document.querySelector('.controls');
   if (controls) {
     controls.style.display = 'block';
-    controls.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   
   // Show the Open Console button
@@ -419,7 +394,6 @@ function populateRoleDropdown(account) {
     orgDefaults = cfg.organizations[account.defaults];
   }
   
-  // console.log('populateRoleDropdown debug:', {
   //   accountName: account?.name || account?.aws_account_id,
   //   accountDefaults: account?.defaults,
   //   orgDefaults,
@@ -436,7 +410,6 @@ function populateRoleDropdown(account) {
   
   // Check if organization has altRoles
   if (orgDefaults?.altRoles && Array.isArray(orgDefaults.altRoles) && orgDefaults.altRoles.length > 0) {
-    // console.log('Showing role dropdown with altRoles');
     
     // Show dropdown and hide input
     roleSelect.style.display = 'block';
@@ -470,7 +443,6 @@ function populateRoleDropdown(account) {
     roleInput.value = defaultRole;
     
   } else {
-    // console.log('No altRoles found, showing input field');
     // Hide dropdown and show input
     roleSelect.style.display = 'none';
     roleInput.style.display = 'block';
@@ -481,7 +453,6 @@ function populateRoleDropdown(account) {
 }
 
 function handleRoleSelection() {
-  // console.log('Role selection changed to:', roleSelect.value);
   if (roleSelect.value === 'OTHER') {
     // Show input field for custom role
     roleSelect.style.display = 'none';
@@ -604,7 +575,6 @@ openBtn.addEventListener("click", async () => {
     destinationUrl = awsConsoleUrlWithRegion(tab.url, region);
   }
 
-  // console.log('SSO Launch Debug:', {
   //   accountId: selectedAccount.accountId,
   //   accountDefaults: selectedAccount.defaults,
   //   orgDefaults: orgDefaults,
@@ -756,7 +726,6 @@ function copyAccountId(accountId) {
     navigator.clipboard.writeText(accountId).then(() => {
       showSuccess(`Account ID ${accountId} copied to clipboard`);
     }).catch(err => {
-      // console.error('Failed to copy to clipboard:', err);
       fallbackCopyToClipboard(accountId);
     });
   } else {
@@ -784,7 +753,6 @@ function fallbackCopyToClipboard(text) {
       showError("Failed to copy account ID to clipboard");
     }
   } catch (err) {
-    // console.error('Fallback copy failed:', err);
     showError("Failed to copy account ID to clipboard");
   }
   
@@ -803,7 +771,6 @@ function startPopupKeepAlive() {
   popupKeepAliveInterval = setInterval(() => {
     chrome.runtime.sendMessage({ type: "PING" }, (response) => {
       if (chrome.runtime.lastError) {
-        // console.warn('Keepalive ping failed:', chrome.runtime.lastError.message);
       }
     });
   }, 10000);
@@ -862,15 +829,11 @@ chrome.storage.sync.get(["awsSsoLauncherConfig"], (syncRes) => {
       }
     }
     
-    // console.log('Popup: Using config from', configSource, 'storage');
     initializeWithConfig(storedConfig);
   });
 });
 
 function initializeWithConfig(storedConfig) {
-  // console.log('Initializing with config:', storedConfig);
-  // console.log('Config format:', storedConfig?.format);
-  // console.log('Has parsedConfig:', !!storedConfig?.parsedConfig);
   // if (storedConfig?.parsedConfig) {
   //   console.log('Parsed config details:', {
   //     organizationsCount: Object.keys(storedConfig.parsedConfig.organizations || {}).length,
@@ -908,15 +871,12 @@ function initializeWithConfig(storedConfig) {
     };
   }
   
-  // console.log('Configuration loaded:', cfg);
-  // console.log('Organizations config:', cfg?.organizations);
   // if (cfg?.organizations) {
   //   Object.keys(cfg.organizations).forEach(orgName => {
   //     console.log(`Organization ${orgName}:`, cfg.organizations[orgName]);
   //   });
   // }
   
-  buildAllAccountsList();
   populateOrganizations();
   populateGroups();
   highlightCurrentAccountFromSession();
@@ -951,7 +911,6 @@ function getSessionStatusWithRetry(attempt = 0) {
   
   chrome.runtime.sendMessage({ type: "GET_SESSION_STATUS" }, (status) => {
     if (chrome.runtime.lastError) {
-      // console.warn(`Background script communication failed (attempt ${attempt + 1}):`, chrome.runtime.lastError.message);
       
       if (attempt < maxAttempts - 1) {
         // Retry after a short delay
@@ -960,7 +919,6 @@ function getSessionStatusWithRetry(attempt = 0) {
         }, 500);
       } else {
         // All retries failed, try alternative approach
-        // console.warn('All background script communication attempts failed, trying content script detection');
         showNoSessionDetected("Service worker not responding");
         triggerSessionDetection();
       }
@@ -1047,7 +1005,6 @@ function triggerSessionDetection() {
       setTimeout(() => {
         chrome.tabs.sendMessage(activeTab.id, { type: "DETECT_SESSION" }, (response) => {
           if (chrome.runtime.lastError) {
-            // console.warn('Content script communication failed:', chrome.runtime.lastError.message);
             showNoSessionDetected("Content script not ready");
             return;
           }
@@ -1063,7 +1020,6 @@ function triggerSessionDetection() {
         });
       }, 1000);
     }).catch((error) => {
-      // console.log('Content script injection failed or already loaded:', error);
       // Try to send message anyway
       chrome.tabs.sendMessage(activeTab.id, { type: "DETECT_SESSION" }, (response) => {
         if (chrome.runtime.lastError) {

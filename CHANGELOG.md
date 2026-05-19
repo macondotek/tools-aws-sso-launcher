@@ -8,85 +8,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Nothing yet
-
-### Changed
-- Nothing yet
-
-### Deprecated
-- Nothing yet
-
-### Removed
-- Nothing yet
+- Config export: download full configuration as a dated JSON file from the Options page
+- Config import: restore configuration from a previously exported JSON file
 
 ### Fixed
-- Nothing yet
+- Popup action buttons (Open Console, Open SSO Home) were hidden below the fold when an account was selected; popup now uses a flex layout so buttons always stay in view
 
-### Security
-- Nothing yet
+### Changed
+- Region dropdown expanded from 5 entries to all 30+ commercial AWS regions, grouped by geography (US, Canada, South America, Europe, Asia Pacific, Middle East & Africa)
+- Removed all commented-out debug `console.log` lines from production code; `window.awsSSODebug.debugPage()` now returns a proper diagnostic object
+
+### Removed
+- Dead code: `allAccounts` array, `buildAllAccountsList()`, duplicate `extractAccountFromElement` (identical to `parseAccountFromElement`), and the unused `DEBUG_SESSION` message handler in the content script
+
+---
+
+## [1.1.6] - 2026-05-18
+
+### Added
+- GitHub Actions CI/CD workflow (`publish.yml`) — pushing a version tag automatically packages the extension and uploads it to the Chrome Web Store
+- `version.sh` now pushes the tag to origin after committing, triggering the CI/CD pipeline as a single-step publish flow
+
+### Fixed
+- Removed unnecessary `scripting` permission from `manifest.json` (only `storage` and `tabs` are needed)
+- `altRoles` in organization config now correctly parsed as a comma-separated string (was previously expected as a JSON array)
+- Organization filter dropdown now correctly hides itself when no organizations are configured
+- Account selection now uses a composite group+index key to correctly handle duplicate account IDs across different groups
+
+### Changed
+- MacondoTek logo added to Options page header
+- Privacy Policy link added to Options page footer, pointing to the published policy at macondotek.com
+
+> Note: versions 1.1.1–1.1.5 were internal CI/CD pipeline iterations establishing the GitHub Actions → Chrome Web Store publish flow (OAuth client type, CLI flag changes in `chrome-webstore-upload-cli@4`, `PUBLISHER_ID` secret, GitHub Release permissions).
+
+---
+
+## [1.1.0] - 2026-03-02
+
+### Changed
+- Region input in popup replaced with a dropdown (`<select>`) with the most common regions pre-filled and an "Other…" fallback for custom regions
+
+### Fixed
+- Popup configuration loading now correctly prioritizes local storage over sync storage for large configs
+
+---
 
 ## [1.0.0] - 2025-10-17
 
 ### Added
-- Initial release of AWS SSO Launcher Chrome Extension
-- Multi-organization AWS SSO support
-- Account grouping and management system
-- Secure session detection without localStorage access
-- Professional UI with MacondoTek branding
-- Comprehensive configuration system with INI-style format
-- Copy account ID functionality with clipboard API
-- Smart group expansion based on current session
-- 2-column options page layout
-- Organization inheritance system
-- Alternative roles support
-- Session status display with expiry warnings
-- Search and filtering capabilities
-- Responsive design with modern CSS
-- Complete documentation and configuration guides
-
-### Features
-- **Organizations**: Define multiple AWS organizations with default settings
-- **Accounts**: Group accounts with custom roles and regions
-- **Inheritance**: Use `defaults = OrganizationName` for configuration inheritance
-- **Session Detection**: Real-time detection of active AWS console sessions
-- **UI/UX**: Professional interface with hover effects and animations
-- **Configuration**: Two-field configuration system (organizations + accounts)
-- **Branding**: MacondoTek logo and website integration
-- **Accessibility**: Proper alt text and keyboard navigation support
-
-### Technical
-- Chrome Extension Manifest V3
-- Modern JavaScript (ES6+)
-- CSS Grid and Flexbox layouts
-- Clipboard API with fallback support
-- Secure content script injection
-- Background service worker
-- Storage API integration
-- Cross-origin request handling
-
----
-
-## Version Numbering
-
-This project uses [Semantic Versioning](https://semver.org/):
-
-- **MAJOR** version when you make incompatible API changes
-- **MINOR** version when you add functionality in a backwards compatible manner  
-- **PATCH** version when you make backwards compatible bug fixes
-
-### Version Types
-
-- **Patch (1.0.1)**: Bug fixes, documentation updates, minor improvements
-- **Minor (1.1.0)**: New features, UI improvements, new configuration options
-- **Major (2.0.0)**: Breaking changes, major UI redesigns, API changes
-
-### Release Process
-
-1. Update version using `./version.sh [patch|minor|major]`
-2. Update this CHANGELOG.md with changes
-3. Commit and push changes
-4. Create GitHub release with tag
-5. Update Chrome Web Store listing
+- Initial release of the AWS SSO Launcher Chrome Extension
+- Multi-organization AWS SSO support with INI-style configuration
+- Account grouping system — organize accounts into named groups shown in the popup
+- One-click SSO launch (same tab or new tab) with role and region selection
+- Alternative roles support (`altRoles`) — dropdown appears in the edit form when configured
+- Secure session detection without `localStorage` — 12 different DOM/URL/cookie detection methods
+- Session status display in popup header with expiry warning
+- Real-time search across all groups and accounts
+- Organization filter dropdown to narrow the account list
+- Copy account ID to clipboard button on each account row
+- Collapsible group sections (accordion) with account count badges
+- MacondoTek branding with logo on the Options page
+- Two-field configuration (organizations + accounts) parsed by `ConfigParser`
+- Configuration inheritance: accounts use `defaults = OrgName` to inherit region, role, and SSO URL
+- Chrome Extension Manifest V3, service worker background script
+- Storage quota handling — falls back to `chrome.storage.local` when config exceeds sync limits
 
 ---
 
@@ -94,5 +79,4 @@ This project uses [Semantic Versioning](https://semver.org/):
 
 - [GitHub Repository](https://github.com/macondotek/tools-aws-sso-launcher)
 - [MacondoTek Website](https://www.macondotek.com)
-- [Chrome Web Store](https://chrome.google.com/webstore) (Coming Soon)
-
+- [Chrome Web Store](https://chromewebstore.google.com/detail/mtk-awslauncher/copkcllbbkddonhallnciffiiedddkjk)

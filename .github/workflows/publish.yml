@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +40,9 @@ jobs:
         run: npx chrome-webstore-upload-cli@latest upload --source MTK-AWSLauncher.zip --skip-submit
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: MTK-AWSLauncher.zip
-          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} MTK-AWSLauncher.zip \
+            --title "${{ github.ref_name }}" \
+            --generate-notes

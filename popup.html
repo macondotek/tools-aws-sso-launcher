@@ -4,12 +4,21 @@
   <meta charset="utf-8" />
   <title>MTK AWS Launcher</title>
   <style>
-    body { 
-      font: 14px system-ui, sans-serif; 
-      min-width: 380px; 
+    html {
+      max-height: 580px;
+    }
+
+    body {
+      font: 14px system-ui, sans-serif;
+      min-width: 380px;
       max-width: 420px;
-      padding: 12px; 
+      max-height: 580px;
+      padding: 12px;
       margin: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     
     h3 { margin-top: 0; margin-bottom: 12px; color: #333; }
@@ -72,7 +81,8 @@
     }
     
     .groups-container {
-      max-height: 400px;
+      flex: 1;
+      min-height: 80px;
       overflow-y: auto;
       margin-bottom: 12px;
     }
@@ -418,11 +428,48 @@
     <div class="control-group">
       <label for="regionSelect">Region</label>
       <select id="regionSelect">
-        <option value="us-east-1">us-east-1 (N. Virginia)</option>
-        <option value="ca-central-1">ca-central-1 (Canada)</option>
-        <option value="ap-south-1">ap-south-1 (Mumbai)</option>
-        <option value="ap-southeast-2">ap-southeast-2 (Sydney)</option>
-        <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+        <optgroup label="US">
+          <option value="us-east-1">us-east-1 (N. Virginia)</option>
+          <option value="us-east-2">us-east-2 (Ohio)</option>
+          <option value="us-west-1">us-west-1 (N. California)</option>
+          <option value="us-west-2">us-west-2 (Oregon)</option>
+        </optgroup>
+        <optgroup label="Canada">
+          <option value="ca-central-1">ca-central-1 (Central)</option>
+          <option value="ca-west-1">ca-west-1 (Calgary)</option>
+        </optgroup>
+        <optgroup label="South America">
+          <option value="sa-east-1">sa-east-1 (São Paulo)</option>
+        </optgroup>
+        <optgroup label="Europe">
+          <option value="eu-central-1">eu-central-1 (Frankfurt)</option>
+          <option value="eu-central-2">eu-central-2 (Zurich)</option>
+          <option value="eu-west-1">eu-west-1 (Ireland)</option>
+          <option value="eu-west-2">eu-west-2 (London)</option>
+          <option value="eu-west-3">eu-west-3 (Paris)</option>
+          <option value="eu-north-1">eu-north-1 (Stockholm)</option>
+          <option value="eu-south-1">eu-south-1 (Milan)</option>
+          <option value="eu-south-2">eu-south-2 (Spain)</option>
+        </optgroup>
+        <optgroup label="Asia Pacific">
+          <option value="ap-south-1">ap-south-1 (Mumbai)</option>
+          <option value="ap-south-2">ap-south-2 (Hyderabad)</option>
+          <option value="ap-southeast-1">ap-southeast-1 (Singapore)</option>
+          <option value="ap-southeast-2">ap-southeast-2 (Sydney)</option>
+          <option value="ap-southeast-3">ap-southeast-3 (Jakarta)</option>
+          <option value="ap-southeast-4">ap-southeast-4 (Melbourne)</option>
+          <option value="ap-southeast-5">ap-southeast-5 (Malaysia)</option>
+          <option value="ap-northeast-1">ap-northeast-1 (Tokyo)</option>
+          <option value="ap-northeast-2">ap-northeast-2 (Seoul)</option>
+          <option value="ap-northeast-3">ap-northeast-3 (Osaka)</option>
+          <option value="ap-east-1">ap-east-1 (Hong Kong)</option>
+        </optgroup>
+        <optgroup label="Middle East &amp; Africa">
+          <option value="me-south-1">me-south-1 (Bahrain)</option>
+          <option value="me-central-1">me-central-1 (UAE)</option>
+          <option value="il-central-1">il-central-1 (Israel)</option>
+          <option value="af-south-1">af-south-1 (Cape Town)</option>
+        </optgroup>
         <option value="OTHER">Other...</option>
       </select>
       <input id="regionInput" placeholder="e.g. me-south-1" style="display: none; margin-top: 6px;" />
@@ -436,7 +483,7 @@
     <div class="footer">
       <small><a href="#" id="optionsLink">Configure groups and accounts in Options</a></small>
       <br>
-      <small style="color: #999; margin-top: 4px; display: block;">&copy; 2025 <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">MacondoTek</a> · v<span id="versionDisplay"></span></small>
+      <small style="color: #999; margin-top: 4px; display: block;">&copy; 2026 <a href="https://www.macondotek.com" target="_blank" style="color: #007cba; text-decoration: none;">MacondoTek</a> · v<span id="versionDisplay"></span></small>
     </div>
 
   <script src="popup.js"></script>
